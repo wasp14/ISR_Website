@@ -1,95 +1,101 @@
 <template>
-  <transition name="fade-slide">
+  <header class="fixed top-3 left-0 w-full z-50 flex justify-center items-start h-12">
+    <!-- Glass background bar -->
+    <div
+      :class="[
+        'absolute top-0 w-4/5 h-10 rounded-2xl shadow-lg backdrop-blur-md transition-all duration-500 ease-in-out',
+        isHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100 bg-gray-900/70'
+      ]"
+    ></div>
+
+    <!-- Navbar links/icons (slide and fade on scroll) -->
     <nav
-      v-show="isVisible"
-      class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50
-             bg-gray-900/70 text-white border border-gray-700/50
-             rounded-full shadow-lg px-10 py-3 flex items-center justify-center
-             space-x-10 backdrop-blur-md"
+      class="absolute flex items-center justify-between h-10 w-4/5 transition-all duration-500 ease-in-out"
+      :class="isHidden ? '-translate-y-2 opacity-80' : 'translate-y-0 opacity-100'"
     >
-      <!-- Navbar items inline -->
-      <a
-        v-for="item in navItems"
-        :key="item.name"
-        :href="item.link"
-        class="flex items-center gap-2 text-sm font-semibold transition hover:scale-105"
-        :class="activeSection === item.name
-          ? 'text-blue-400'
-          : 'text-gray-300'"
-      >
-        <component
-          :is="item.icon"
-          class="h-5 w-5"
-          :class="activeSection === item.name
-            ? 'text-blue-400'
-            : 'text-gray-300'"
-        />
-        <span>{{ item.name }}</span>
-      </a>
+      <!-- Left links -->
+      <div class="flex items-center space-x-4">
+        <a
+          v-for="item in leftItems"
+          :key="item.name"
+          :href="item.link"
+          class="flex items-center transition-all duration-300 ease-in-out text-sm group px-2 py-1 rounded-md hover:scale-105 hover:bg-white/10"
+        >
+          <!-- <component
+            :is="item.icon"
+            class="w-4 h-4 mr-1 text-white group-hover:text-blue-400 transition-colors duration-300 ease-in-out"
+          /> -->
+          <span class="font-semibold leading-none text-white group-hover:text-blue-400 transition-colors duration-300 ease-in-out">
+            {{ item.name }}
+          </span>
+        </a>
+      </div>
+
+      <!-- Center logo -->
+      <div class="flex justify-center items-center">
+        <img src="@/assets/isr_logo.png" alt="Committee Logo" class="h-8 w-auto"/>
+      </div>
+
+      <!-- Right links -->
+      <div class="flex items-center space-x-4">
+        <a
+          v-for="item in rightItems"
+          :key="item.name"
+          :href="item.link"
+          class="flex items-center transition-all duration-300 ease-in-out text-sm group px-2 py-1 rounded-md hover:scale-105 hover:bg-white/10"
+        >
+          <!-- <component
+            :is="item.icon"
+            class="w-4 h-4 mr-1 text-white group-hover:text-blue-400 transition-colors duration-300 ease-in-out"
+          /> -->
+          <span class="font-semibold leading-none text-white group-hover:text-blue-400 transition-colors duration-300 ease-in-out">
+            {{ item.name }}
+          </span>
+        </a>
+      </div>
     </nav>
-  </transition>
+  </header>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { IconHome, IconMessage, IconUser } from "@tabler/icons-vue";
+import { ref, onMounted, onUnmounted } from 'vue'
+import { IconHome, IconUser, IconMessage, IconTilde, IconChalkboardTeacher, IconCalendarEvent } from '@tabler/icons-vue'
 
-const navItems = [
-  { name: "Home", link: "#home", icon: IconHome },
-  { name: "About", link: "#about", icon: IconUser },
-  { name: "Contact", link: "#contact", icon: IconMessage },
-];
+const isHidden = ref(false)
+let lastScrollY = 0
 
-// Show/hide navbar on scroll
-const isVisible = ref(true);
-let lastScrollY = window.scrollY;
+// Split links to left and right of logo
+const leftItems = [
+  { name: 'Home', link: '/', icon: IconHome },
+    { name: 'About', link: '/about', icon: IconTilde },
+  { name: 'Contact', link: '/contact', icon: IconMessage },
+  { name: 'ISR Team', link: '/about', icon: IconUser },
+]
+const rightItems = [
+
+  { name: 'ISR Initiatives', link: '/contact', icon: IconMessage },
+  { name: 'ISR Teach', link: '/about', icon: IconChalkboardTeacher },
+  { name: 'Annual Events', link: '/contact', icon: IconCalendarEvent },
+  { name: 'Research', link: '/about', icon: IconUser },
+  
+]
 
 const handleScroll = () => {
-  const currentScrollY = window.scrollY;
-  if (currentScrollY > lastScrollY && currentScrollY > 100) {
-    isVisible.value = false;
+  const currentScroll = window.scrollY
+  if (currentScroll > lastScrollY && currentScroll > 30) {
+    isHidden.value = true
   } else {
-    isVisible.value = true;
+    isHidden.value = false
   }
-  lastScrollY = currentScrollY;
-};
+  lastScrollY = currentScroll
+}
 
-// Highlight active section
-const activeSection = ref("Home");
-
-const observeSections = () => {
-  const sections = document.querySelectorAll("section");
-  const options = { threshold: 0.6 };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        activeSection.value = entry.target.getAttribute("data-name");
-      }
-    });
-  }, options);
-
-  sections.forEach((section) => observer.observe(section));
-};
-
-onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  observeSections();
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+onMounted(() => window.addEventListener('scroll', handleScroll))
+onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
 <style scoped>
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.4s ease;
-}
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
+nav a {
+  letter-spacing: 0.5px;
 }
 </style>
